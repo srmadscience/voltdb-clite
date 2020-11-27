@@ -9,7 +9,9 @@ import java.util.Properties;
 import java.util.Random;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringSerializer;
 
 public class KafkaCreditDemo {
 
@@ -47,6 +49,12 @@ public class KafkaCreditDemo {
 		Properties config = new Properties();
 		config.put("client.id", InetAddress.getLocalHost().getHostName());
 		config.put("bootstrap.servers", kafkaserverplusport);
+		config.put(
+	              ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, 
+	              StringSerializer.class);
+		config.put(
+	              ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, 
+	              StringSerializer.class);
 		config.put("acks", "all");
 		
 		KafkaProducer<String, String> producer = new KafkaProducer<String, String> (config);
