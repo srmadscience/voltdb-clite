@@ -13,11 +13,14 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 
 public class KafkaCreditDemo {
 
+	private static final String QUOTE_COMMA_QUOTE = "\",\"";
+	private static final String SINGLE_QUOTE = "\"";
+
 	public static void main(String[] args) throws UnknownHostException {
 
 		msg("Parameters:" + Arrays.toString(args));
 
-		if (args.length != 6) {
+		if (args.length != 5) {
 			msg("Usage: kafkaserverplusport recordcount  tpms durationseconds maxamount");
 			System.exit(1);
 		}
@@ -31,10 +34,9 @@ public class KafkaCreditDemo {
 
 		try {
 			recordCount = Integer.parseInt(args[1]);
-			offset = Integer.parseInt(args[2]);
-			tpms = Integer.parseInt(args[3]);
-			durationseconds = Integer.parseInt(args[4]);
-			maxamount = Integer.parseInt(args[5]);
+			tpms = Integer.parseInt(args[2]);
+			durationseconds = Integer.parseInt(args[3]);
+			maxamount = Integer.parseInt(args[4]);
 
 		} catch (NumberFormatException e) {
 			msg("Value should be a number:" + e.getMessage());
@@ -75,13 +77,11 @@ public class KafkaCreditDemo {
 				tpThisMs = 0;
 			}
 			
-			int userId = r.nextInt(recordCount) + offset;
+			int userId = r.nextInt(recordCount);
 			int amount = r.nextInt(maxamount);
 			String txnId = "Kafka_" + tranCount + "_" + currentMs;
-			String request = "\"" + userId + "\",\"" + amount + "\",\"" +txnId +  "\"" ;
-			
-			
-			
+			String request = SINGLE_QUOTE + userId + QUOTE_COMMA_QUOTE + amount + QUOTE_COMMA_QUOTE +txnId +  SINGLE_QUOTE ;
+				
 			ProducerRecord<String, String> newrec = new ProducerRecord<String, String>("ADDCREDIT",
 					request);
 			

@@ -46,7 +46,7 @@ public class AddCredit extends VoltProcedure {
 	public static final SQLStmt getUserBalance = new SQLStmt("SELECT balance FROM user_balance WHERE userid = ?;");
 
 	public static final SQLStmt getCurrrentlyAllocated = new SQLStmt(
-			"select sum(allocated_amount) allocated_amount from user_usage_table where userid = ?;");
+			"select nvl(sum(allocated_amount),0)  allocated_amount from user_usage_table where userid = ?;");
 
 
 	// @formatter:on

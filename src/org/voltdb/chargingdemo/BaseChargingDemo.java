@@ -262,7 +262,6 @@ public class BaseChargingDemo {
 
 		// Query user #queryUserId...
 		msg("Query user #" + queryUserId + "...");
-		final long startQueryUserMs = System.currentTimeMillis();
 		ClientResponse userResponse = mainClient.callProcedure("GetUser", queryUserId);
 
 		for (int i = 0; i < userResponse.getResults().length; i++) {
@@ -270,7 +269,6 @@ public class BaseChargingDemo {
 		}
 
 		msg("Show amount of credit currently reserved for products...");
-		final long startQueryAllocationsMs = System.currentTimeMillis();
 		ClientResponse allocResponse = mainClient.callProcedure("ShowCurrentAllocations__promBL");
 
 		for (int i = 0; i < allocResponse.getResults().length; i++) {
@@ -334,7 +332,7 @@ public class BaseChargingDemo {
 		final long endtimeMs = System.currentTimeMillis() + (durationSeconds * 1000);
 
 		// How many transactions we've done...
-		int tranCount = 0;
+		long tranCount = 0;
 		long inFlightCount = 0;
 		long addCreditCount = 0;
 		long reportUsageCount = 0;
@@ -404,7 +402,7 @@ public class BaseChargingDemo {
 		long elapsedTimeMs = System.currentTimeMillis() - startMsRun;
 		msg("Processed " + tranCount + " transactions in " + elapsedTimeMs + " milliseconds" );
 		
-		long tps = (tranCount * 1000 / elapsedTimeMs );
+		long tps = (tranCount / elapsedTimeMs ) / 1000;
 		
 		msg("TPS = " + tps );
 		

@@ -41,7 +41,7 @@ public class ReportQuotaUsage extends VoltProcedure {
 	public static final SQLStmt getUserBalance = new SQLStmt("SELECT balance, CAST(? AS BIGINT) sessionid FROM user_balance WHERE userid = ?;");
 
 	public static final SQLStmt getCurrrentlyAllocated = new SQLStmt(
-			"select sum(allocated_amount) allocated_amount from user_usage_table where userid = ?;");
+			"select nvl(sum(allocated_amount),0)  allocated_amount from user_usage_table where userid = ?;");
 
 	public static final SQLStmt addTxn = new SQLStmt("INSERT INTO user_recent_transactions "
 			+ "(userid, user_txn_id, txn_time, approved_amount,spent_amount,purpose) VALUES (?,?,NOW,?,?,?);");
