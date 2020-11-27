@@ -80,7 +80,7 @@ public class UpsertUser extends VoltProcedure {
 
 		} else {
 
-			voltQueueSQL(addTxn, userId, txnId, 0, -1 * addBalance, "Upsert user");
+			voltQueueSQL(addTxn, userId, txnId, 0, addBalance, "Upsert user");
 
 			if (!results[0].advanceRow()) {
 

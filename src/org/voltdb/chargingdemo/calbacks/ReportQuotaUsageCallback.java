@@ -30,7 +30,8 @@ public class ReportQuotaUsageCallback implements ProcedureCallback {
 
 			if (arg0.getAppStatus() == ReferenceData.STATUS_ALL_UNITS_ALLOCATED
 					|| arg0.getAppStatus() == ReferenceData.STATUS_SOME_UNITS_ALLOCATED
-					|| arg0.getAppStatus() == ReferenceData.STATUS_NO_MONEY) {
+					|| arg0.getAppStatus() == ReferenceData.STATUS_NO_MONEY
+					|| arg0.getAppStatus() == ReferenceData.STATUS_OK) {
 
 				userTransactionState.endTran();
 

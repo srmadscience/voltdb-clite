@@ -46,6 +46,9 @@ public class ReportQuotaUsage extends VoltProcedure {
 	public static final SQLStmt addTxn = new SQLStmt("INSERT INTO user_recent_transactions "
 			+ "(userid, user_txn_id, txn_time, approved_amount,spent_amount,purpose) VALUES (?,?,NOW,?,?,?);");
 
+	public static final SQLStmt migrateOldTxn = new SQLStmt("MIGRATE FROM user_recent_transactions WHERE userid = ? "
+			+ " AND txn_time <  DATEADD(MINUTE, -5, NOW) AND NOT MIGRATING();");
+
 	public static final SQLStmt delOldUsage = new SQLStmt(
 			"DELETE FROM user_usage_table WHERE userid = ? AND sessionid = ?;");
 
@@ -148,6 +151,7 @@ public class ReportQuotaUsage extends VoltProcedure {
      	this.setAppStatusString(decision);
 		// Note that transaction is now 'official'
 		
+		voltQueueSQL(migrateOldTxn,userId);
 		voltQueueSQL(addTxn, userId, txnId, amountApproved, amountSpent, decision);
 	
 		voltQueueSQL(getUserBalance, sessionId, userId);
