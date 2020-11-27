@@ -26,7 +26,6 @@ package chargingdemoprocs;
 import org.voltdb.SQLStmt;
 import org.voltdb.VoltProcedure;
 import org.voltdb.VoltTable;
-import org.voltdb.VoltType;
 
 public class ReportQuotaUsage extends VoltProcedure {
 
