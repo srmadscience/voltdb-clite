@@ -44,10 +44,7 @@ public class ReportQuotaUsage extends VoltProcedure {
 			"select nvl(sum(allocated_amount),0)  allocated_amount from user_usage_table where userid = ?;");
 
 	public static final SQLStmt addTxn = new SQLStmt("INSERT INTO user_recent_transactions "
-			+ "(userid, user_txn_id, txn_time, approved_amount,spent_amount,purpose) VALUES (?,?,NOW,?,?,?);");
-
-	public static final SQLStmt migrateOldTxn = new SQLStmt("MIGRATE FROM user_recent_transactions WHERE userid = ? "
-			+ " AND txn_time <  DATEADD(MINUTE, -5, NOW) AND NOT MIGRATING();");
+			+ "(userid, user_txn_id, txn_time, approved_amount,spent_amount,purpose,sessionid) VALUES (?,?,NOW,?,?,?,?);");
 
 	public static final SQLStmt delOldUsage = new SQLStmt(
 			"DELETE FROM user_usage_table WHERE userid = ? AND sessionid = ?;");
@@ -103,7 +100,7 @@ public class ReportQuotaUsage extends VoltProcedure {
 		voltQueueSQL(getCurrrentlyAllocated, userId);
 
 		if (unitsWanted == 0) {
-			voltQueueSQL(addTxn, userId, txnId, 0,amountSpent, decision);
+			voltQueueSQL(addTxn, userId, txnId, 0,amountSpent, decision,sessionId);
 			voltQueueSQL(getUserBalance, sessionId, userId);
 			voltQueueSQL(getCurrrentlyAllocated, userId);
 
@@ -151,8 +148,7 @@ public class ReportQuotaUsage extends VoltProcedure {
      	this.setAppStatusString(decision);
 		// Note that transaction is now 'official'
 		
-		voltQueueSQL(migrateOldTxn,userId);
-		voltQueueSQL(addTxn, userId, txnId, amountApproved, amountSpent, decision);
+		voltQueueSQL(addTxn, userId, txnId, amountApproved, amountSpent, decision,sessionId);
 	
 		voltQueueSQL(getUserBalance, sessionId, userId);
 		voltQueueSQL(getCurrrentlyAllocated, userId);

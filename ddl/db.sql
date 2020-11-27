@@ -39,7 +39,8 @@ create table user_recent_transactions
 ,approved_amount bigint 
 ,spent_amount bigint 
 ,purpose  varchar(128)
-,primary key (userid, user_txn_id));
+,primary key (userid, user_txn_id))
+USING TTL 5 MINUTES ON COLUMN txn_time;
 
 PARTITION TABLE user_recent_transactions ON COLUMN userid;
 
