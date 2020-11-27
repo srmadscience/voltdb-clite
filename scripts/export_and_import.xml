@@ -1,0 +1,16 @@
+   <export>
+        <configuration target="USER_FINANCIAL_EVENTS" enabled="true" type="kafka" exportconnectorclass="" threadpool="">
+            <property name="bootstrap.servers">172.31.23.37:9092</property>
+        </configuration>
+        <configuration target="USER_TRANSACTIONS" enabled="true" type="kafka" exportconnectorclass="" threadpool="">
+            <property name="bootstrap.servers">172.31.23.37:9092</property>
+        </configuration>
+    </export>
+   <import>
+        <configuration type="kafka" enabled="true" format="csv">
+            <property name="topics">ADDCREDIT</property>
+            <property name="procedure">AddCredit</property>
+            <property name="brokers">172.31.23.37:9092</property>
+        </configuration>
+    </import>
+
