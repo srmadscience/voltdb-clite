@@ -18,13 +18,12 @@ public class KafkaCreditDemo {
 		msg("Parameters:" + Arrays.toString(args));
 
 		if (args.length != 6) {
-			msg("Usage: kafkaserverplusport recordcount offset tpms durationseconds maxamount");
+			msg("Usage: kafkaserverplusport recordcount  tpms durationseconds maxamount");
 			System.exit(1);
 		}
 
 		String kafkaserverplusport = args[0];
 		int recordCount = 0;
-		int offset = 0;
 		int tpms = 0;
 		int durationseconds = 0;
 		int maxamount = 0;

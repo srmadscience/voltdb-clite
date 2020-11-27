@@ -42,6 +42,12 @@ public class AddCredit extends VoltProcedure {
 
 	public static final SQLStmt reportFinancialEvent = new SQLStmt("INSERT INTO user_financial_events "
 			+ "(userid,amount,user_txn_id,message) VALUES (?,?,?,?);");
+	
+	public static final SQLStmt getUserBalance = new SQLStmt("SELECT balance FROM user_balance WHERE userid = ?;");
+
+	public static final SQLStmt getCurrrentlyAllocated = new SQLStmt(
+			"select sum(allocated_amount) allocated_amount from user_usage_table where userid = ?;");
+
 
 	// @formatter:on
 
@@ -80,7 +86,6 @@ public class AddCredit extends VoltProcedure {
 		} else {
 
 			// Report credit add...
-
 			this.setAppStatusCode(ReferenceData.CREDIT_ADDED);
 			this.setAppStatusString(extraCredit + " added by Txn " + txnId);
 
@@ -89,6 +94,9 @@ public class AddCredit extends VoltProcedure {
 			voltQueueSQL(addTxn, userId, txnId, 0, extraCredit, "Add Credit");
 			voltQueueSQL(reportFinancialEvent, userId, extraCredit, txnId, "OK");
 		}
+		
+		voltQueueSQL(getUserBalance, userId);
+		voltQueueSQL(getCurrrentlyAllocated, userId);
 
 		return voltExecuteSQL(true);
 	}

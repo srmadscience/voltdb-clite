@@ -38,7 +38,7 @@ public class ReportQuotaUsage extends VoltProcedure {
 	public static final SQLStmt getTxn = new SQLStmt("SELECT txn_time FROM user_recent_transactions "
 			+ "WHERE userid = ? AND user_txn_id = ?;");
 
-	public static final SQLStmt getUserBalance = new SQLStmt("SELECT balance FROM user_balance WHERE userid = ?;");
+	public static final SQLStmt getUserBalance = new SQLStmt("SELECT balance, CAST(? AS BIGINT) sessionid FROM user_balance WHERE userid = ?;");
 
 	public static final SQLStmt getCurrrentlyAllocated = new SQLStmt(
 			"select sum(allocated_amount) allocated_amount from user_usage_table where userid = ?;");
@@ -83,7 +83,7 @@ public class ReportQuotaUsage extends VoltProcedure {
 		if (results1[1].advanceRow()) {
 			this.setAppStatusCode(ReferenceData.TXN_ALREADY_HAPPENED);
 			this.setAppStatusString(
-					"Event already happened at " + results1[2].getTimestampAsTimestamp("txn_time").toString());
+					"Event already happened at " + results1[1].getTimestampAsTimestamp("txn_time").toString());
 			return voltExecuteSQL(true);
 		}
 
@@ -95,20 +95,23 @@ public class ReportQuotaUsage extends VoltProcedure {
 
 		// Delete old usage record
 		voltQueueSQL(delOldUsage, userId, sessionId);
-		voltQueueSQL(getUserBalance, userId);
-		voltQueueSQL(getCurrrentlyAllocated, userId);
 		voltQueueSQL(delOldUsageHouseKeeping, userId);
+		voltQueueSQL(getUserBalance, sessionId, userId);
+		voltQueueSQL(getCurrrentlyAllocated, userId);
 
 		if (unitsWanted == 0) {
-			voltQueueSQL(addTxn, userId, txnId, amountSpent, decision);
+			voltQueueSQL(addTxn, userId, txnId, 0,amountSpent, decision);
+			voltQueueSQL(getUserBalance, sessionId, userId);
+			voltQueueSQL(getCurrrentlyAllocated, userId);
+
 			this.setAppStatusCode(ReferenceData.STATUS_OK);
 			return voltExecuteSQL(true);
 		}
 
 		VoltTable[] results2 = voltExecuteSQL();
 
-		VoltTable userBalance = results2[2];
-		VoltTable allocated = results2[3];
+		VoltTable userBalance = results2[3];
+		VoltTable allocated = results2[4];
 
 		// Calculate how much money is actually available...
 
@@ -146,7 +149,9 @@ public class ReportQuotaUsage extends VoltProcedure {
 		// Note that transaction is now 'official'
 		
 		voltQueueSQL(addTxn, userId, txnId, amountApproved, amountSpent, decision);
-		voltQueueSQL(addTxn, userId, txnId, amountSpent, decision);
+	
+		voltQueueSQL(getUserBalance, sessionId, userId);
+		voltQueueSQL(getCurrrentlyAllocated, userId);
 
 		return voltExecuteSQL();
 

@@ -39,8 +39,8 @@ public class ChargingDemoKVStore extends BaseChargingDemo {
 
 		msg("Parameters:" + Arrays.toString(args));
 
-		if (args.length != 8) {
-			msg("Usage: hostnames recordcount offset tpms durationseconds queryseconds jsonsize updateproportion");
+		if (args.length != 7) {
+			msg("Usage: hostnames recordcount tpms durationseconds queryseconds jsonsize updateproportion");
 			System.exit(1);
 		}
 
@@ -50,24 +50,20 @@ public class ChargingDemoKVStore extends BaseChargingDemo {
 		// How many users
 		int userCount = Integer.parseInt(args[1]);
 
-		// Used to allow multiple copies of client to run at once. Makes demo start
-		// creating ids
-		// from 'offset' instead of zero.
-		int offset = Integer.parseInt(args[2]);
 
 		// Target transactions per millisecond.
-		int tpMs = Integer.parseInt(args[3]);
+		int tpMs = Integer.parseInt(args[2]);
 
 		// Runtime for TRANSACTIONS in seconds.
-		int durationSeconds = Integer.parseInt(args[4]);
+		int durationSeconds = Integer.parseInt(args[3]);
 
 		// How often we do global queries...
-		int globalQueryFreqSeconds = Integer.parseInt(args[5]);
+		int globalQueryFreqSeconds = Integer.parseInt(args[4]);
 
 		// How often we do global queries...
-		int jsonsize = Integer.parseInt(args[6]);
+		int jsonsize = Integer.parseInt(args[5]);
 		
-		int updateProportion = Integer.parseInt(args[7]);
+		int updateProportion = Integer.parseInt(args[6]);
 
 	
 		try {
@@ -76,7 +72,7 @@ public class ChargingDemoKVStore extends BaseChargingDemo {
 			Client mainClient = connectVoltDB(hostlist);
 
 			unlockAllRecords(mainClient);
-			runKVBenchmark(userCount, offset, tpMs, durationSeconds, globalQueryFreqSeconds, jsonsize,
+			runKVBenchmark(userCount, tpMs, durationSeconds, globalQueryFreqSeconds, jsonsize,
 					mainClient,updateProportion);
 
 			msg("Closing connection...");

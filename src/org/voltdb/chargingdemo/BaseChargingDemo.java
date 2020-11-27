@@ -31,16 +31,17 @@ import java.util.Date;
 import java.util.Random;
 
 import org.voltdb.chargingdemo.calbacks.AddCreditCallback;
-import org.voltdb.chargingdemo.calbacks.ReportLatencyCallback;
-import org.voltdb.chargingdemo.calbacks.UpdateSessionStateCallback;
+import org.voltdb.chargingdemo.calbacks.ComplainOnErrorCallback;
+
+import org.voltdb.chargingdemo.calbacks.ReportQuotaUsageCallback;
+
 import org.voltdb.client.Client;
 import org.voltdb.client.ClientConfig;
 import org.voltdb.client.ClientFactory;
 import org.voltdb.client.ClientResponse;
 import org.voltdb.client.NoConnectionsException;
 import org.voltdb.client.ProcCallException;
-import org.voltdb.voltutil.stats.SafeHistogramCache;
-import org.voltdb.voltutil.stats.StatsHistogram;
+
 
 import com.google.gson.Gson;
 
@@ -48,22 +49,22 @@ import chargingdemoprocs.ExtraUserData;
 
 public class BaseChargingDemo {
 
-	// Possible values for 'TASK'
-	public static final String TASK_TRANSACTIONS = "TRANSACTIONS";
-	public static final String TASK_USERS = "USERS";
-	public static final String TASK_RUN = "RUN";
-	public static final String TASK_DELETE = "DELETE";
-
-	public static final String[] PRODUCT_NAMES = { "Our Web Site", "SMS messages", "Domestic Internet Access per GB",
-			"Roaming Internet Access per GB", "Domestic calls per minute" };
-
-	public static final int[] PRODUCT_PRICES = { 0, 1, 20, 342, 3 };
-
-	public static final String[] CLUSTER_NAMES = { "notxdcr", "jersey", "badger", "rosal" }; // TODO
-
-	public static final int[] CLUSTER_IDS = { 0, 4, 5, 6 }; // TODO
-
-	public static final int[] WATCHED_BY_CLUSTER_IDS = { 0, 5, 6, 4 }; // TODO
+//	// Possible values for 'TASK'
+//	public static final String TASK_TRANSACTIONS = "TRANSACTIONS";
+//	public static final String TASK_USERS = "USERS";
+//	public static final String TASK_RUN = "RUN";
+//	public static final String TASK_DELETE = "DELETE";
+//
+//	public static final String[] PRODUCT_NAMES = { "Our Web Site", "SMS messages", "Domestic Internet Access per GB",
+//			"Roaming Internet Access per GB", "Domestic calls per minute" };
+//
+//	public static final int[] PRODUCT_PRICES = { 0, 1, 20, 342, 3 };
+//
+//	public static final String[] CLUSTER_NAMES = { "notxdcr", "jersey", "badger", "rosal" }; // TODO
+//
+//	public static final int[] CLUSTER_IDS = { 0, 4, 5, 6 }; // TODO
+//
+//	public static final int[] WATCHED_BY_CLUSTER_IDS = { 0, 5, 6, 4 }; // TODO
 
 	protected static final long GENERIC_QUERY_USER_ID = 42;
 
@@ -76,22 +77,22 @@ public class BaseChargingDemo {
 
 	}
 
-	/**
-	 * @param shc
-	 * @param oneLineSummary
-	 */
-	protected static void getProcPercentiles(SafeHistogramCache shc, StringBuffer oneLineSummary, String procName) {
-
-		StatsHistogram rqu = shc.get(procName);
-		oneLineSummary.append((int) rqu.getLatencyAverage());
-		oneLineSummary.append(':');
-
-		oneLineSummary.append(rqu.getLatencyPct(50));
-		oneLineSummary.append(':');
-
-		oneLineSummary.append(rqu.getLatencyPct(99));
-		oneLineSummary.append(':');
-	}
+//	/**
+//	 * @param shc
+//	 * @param oneLineSummary
+//	 */
+//	protected static void getProcPercentiles(SafeHistogramCache shc, StringBuffer oneLineSummary, String procName) {
+//
+//		StatsHistogram rqu = shc.get(procName);
+//		oneLineSummary.append((int) rqu.getLatencyAverage());
+//		oneLineSummary.append(':');
+//
+//		oneLineSummary.append(rqu.getLatencyPct(50));
+//		oneLineSummary.append(':');
+//
+//		oneLineSummary.append(rqu.getLatencyPct(99));
+//		oneLineSummary.append(':');
+//	}
 
 	/**
 	 * Print a formatted message.
@@ -171,28 +172,6 @@ public class BaseChargingDemo {
 		return gson.toJson(eud);
 	}
 
-	protected static void confirmMetadataExists(Client mainClient)
-			throws IOException, NoConnectionsException, ProcCallException {
-		// Make sure required metadata exists...
-		for (int i = 0; i < PRODUCT_NAMES.length; i++) {
-			ClientResponse cr = mainClient.callProcedure("@AdHoc",
-					"SELECT * FROM product_table where productid = " + i + ";");
-
-			if (!cr.getResults()[0].advanceRow()) {
-				mainClient.callProcedure("product_table.insert", i, PRODUCT_NAMES[i], PRODUCT_PRICES[i]);
-			}
-		}
-
-		for (int i = 0; i < CLUSTER_NAMES.length; i++) {
-			ClientResponse cr = mainClient.callProcedure("@AdHoc",
-					"SELECT * FROM cluster_table where cluster_id = " + CLUSTER_IDS[i] + ";");
-
-			if (!cr.getResults()[0].advanceRow()) {
-				mainClient.callProcedure("cluster_table.insert", CLUSTER_IDS[i], CLUSTER_NAMES[i],
-						WATCHED_BY_CLUSTER_IDS[i], 4);
-			}
-		}
-	}
 
 	protected static void deleteAllUsers(int minId, int maxId, int tpMs, Client mainClient)
 			throws InterruptedException, IOException, NoConnectionsException {
@@ -222,7 +201,7 @@ public class BaseChargingDemo {
 			}
 
 			// Put a request to delete a user into the queue.
-			ReportLatencyCallback deleteUserCallback = new ReportLatencyCallback("DelUser");
+			ComplainOnErrorCallback deleteUserCallback = new ComplainOnErrorCallback();
 			mainClient.callProcedure(deleteUserCallback, "DelUser", i);
 
 			if (i % 100000 == 1) {
@@ -240,7 +219,7 @@ public class BaseChargingDemo {
 		msg("Deleted " + entriesPerMs + " users per ms...");
 	}
 
-	protected static void upsertAllUsers(int userCount, int offset, int tpMs, final String ourJson, int initialCredit,
+	protected static void upsertAllUsers(int userCount,  int tpMs,  String ourJson, int initialCredit,
 			Client mainClient) throws InterruptedException, IOException, NoConnectionsException {
 		final long startMsUpsert = System.currentTimeMillis();
 		long currentMs = System.currentTimeMillis();
@@ -258,9 +237,9 @@ public class BaseChargingDemo {
 				tpThisMs = 0;
 			}
 
-			ReportLatencyCallback upsertUserCallback = new ReportLatencyCallback("UpsertUser");
+			ComplainOnErrorCallback upsertUserCallback = new ComplainOnErrorCallback();
 
-			mainClient.callProcedure(upsertUserCallback, "UpsertUser", i + offset, initialCredit,  ourJson,
+			mainClient.callProcedure(upsertUserCallback, "UpsertUser", i, initialCredit,  ourJson,
 					"Created", new Date(startMsUpsert), "Create_" + i);
 
 			if (i % 100000 == 1) {
@@ -273,20 +252,18 @@ public class BaseChargingDemo {
 		msg("All " + userCount + " entries in queue, waiting for it to drain...");
 		mainClient.drain();
 
-		long entriesPerMs = userCount / (System.currentTimeMillis() - startMsUpsert);
-		msg("Upserted " + entriesPerMs + " users per ms...");
+		
+		long entriesPerMS = userCount / (System.currentTimeMillis() - startMsUpsert);
+		msg("Upserted " + entriesPerMS + " users per ms...");
 	}
 
 	protected static void queryUser(Client mainClient, long queryUserId)
 			throws IOException, NoConnectionsException, ProcCallException {
 
-		SafeHistogramCache shc = SafeHistogramCache.getInstance();
-
 		// Query user #queryUserId...
 		msg("Query user #" + queryUserId + "...");
 		final long startQueryUserMs = System.currentTimeMillis();
 		ClientResponse userResponse = mainClient.callProcedure("GetUser", queryUserId);
-		shc.reportLatency("GetUser", startQueryUserMs, "", 50);
 
 		for (int i = 0; i < userResponse.getResults().length; i++) {
 			msg(System.lineSeparator() + userResponse.getResults()[i].toFormattedString());
@@ -295,7 +272,6 @@ public class BaseChargingDemo {
 		msg("Show amount of credit currently reserved for products...");
 		final long startQueryAllocationsMs = System.currentTimeMillis();
 		ClientResponse allocResponse = mainClient.callProcedure("ShowCurrentAllocations__promBL");
-		shc.reportLatency("ShowCurrentAllocations__promBL", startQueryAllocationsMs, "", 50);
 
 		for (int i = 0; i < allocResponse.getResults().length; i++) {
 			msg(System.lineSeparator() + allocResponse.getResults()[i].toFormattedString());
@@ -304,13 +280,11 @@ public class BaseChargingDemo {
 	protected static void queryLoyaltyCard(Client mainClient, long cardId)
 			throws IOException, NoConnectionsException, ProcCallException {
 
-		SafeHistogramCache shc = SafeHistogramCache.getInstance();
 
 		// Query user #queryUserId...
 		msg("Query card #" + cardId + "...");
 		final long startQueryUserMs = System.currentTimeMillis();
 		ClientResponse userResponse = mainClient.callProcedure("FindByLoyaltyCard", cardId);
-		shc.reportLatency("FindByLoyaltyCard", startQueryUserMs, "", 50);
 
 		for (int i = 0; i < userResponse.getResults().length; i++) {
 			msg(System.lineSeparator() + userResponse.getResults()[i].toFormattedString());
@@ -340,32 +314,19 @@ public class BaseChargingDemo {
 
 	}
 
-	protected static long runTransactionBenchmark(int userCount, int offset, int tpMs, int durationSeconds,
-			int globalQueryFreqSeconds, UserTransactionState[] state, Client mainClient)
+	protected static long runTransactionBenchmark(int userCount, int tpMs, int durationSeconds,
+			int globalQueryFreqSeconds,  Client mainClient)
 			throws InterruptedException, IOException, NoConnectionsException, ProcCallException {
-
-		long lastGlobalQueryMs = 0;
-
-		// UpdateSessionStateCallback examines responses and updates the sessionId
-		// for a
-		// user. SessionId is created inside a VoltDB procedure.
-		UpdateSessionStateCallback ussc = new UpdateSessionStateCallback(state, offset);
-
-		SafeHistogramCache shc = SafeHistogramCache.getInstance();
-
+		
 		Random r = new Random();
-
-		// Tell the system everyone has zero credit, even though that's probably
-		// not true. This will result in lots of AddCredits, by the end of which
-		// state will be up to date.
-		for (int i = 0; i < userCount; i++) {
-
-			if (state[i] == null) {
-				state[i] = new UserTransactionState(i, 0);
-				state[i].IncUserStatus();
-			}
+		
+		UserTransactionState[] users = new UserTransactionState[userCount];
+		
+		msg("Creating client records for " + users.length + " users");
+		for (int i=0; i < users.length; i++) {
+			users[i] = new UserTransactionState(i, -1);
 		}
-
+		
 		final long startMsRun = System.currentTimeMillis();
 		long currentMs = System.currentTimeMillis();
 		int tpThisMs = 0;
@@ -374,8 +335,12 @@ public class BaseChargingDemo {
 
 		// How many transactions we've done...
 		int tranCount = 0;
-		int inFlightCount = 0;
+		long inFlightCount = 0;
+		long addCreditCount = 0;
+		long reportUsageCount = 0;
 
+		msg("starting...");
+		
 		while (endtimeMs > System.currentTimeMillis()) {
 
 			if (tpThisMs++ > tpMs) {
@@ -388,106 +353,78 @@ public class BaseChargingDemo {
 				currentMs = System.currentTimeMillis();
 				tpThisMs = 0;
 			}
-
-			// Find session to do a transaction for...
-			int oursession = r.nextInt(userCount);
-
-			// See if session already has an active transaction and avoid
-			// it if it does.
-
-			if (state[oursession].isTxInFlight()) {
+			
+			
+			int randomuser = r.nextInt(userCount);
+			
+			if (users[randomuser].isTxInFlight()) {
 				inFlightCount++;
+				tpThisMs--;
 			} else {
+				
+				users[randomuser].startTran();
+				
+				if (users[randomuser].spendableBalance < 1000) {
+					
+					addCreditCount++;
+					
+					
+					final long extraCredit = r.nextInt(1000) + 1000;
 
-				int ourProduct = r.nextInt(PRODUCT_NAMES.length);
-				long sessionId = UserTransactionState.SESSION_NOT_STARTED;
-
-				// Come up with reports on how much we used and how much we want...
-
-				// usedUnits is usually less than what we requested last time.
-
-				final int requestUnits = 50 + r.nextInt(49);
-				long usedUnits = r.nextInt(50);
-
-				// state[oursession].getUserStatus() will be zero (STATUS_NEW_USER)
-				// the first time we access a session.
-
-				sessionId = state[oursession].getProductSessionId(ourProduct);
-
-				if (sessionId == UserTransactionState.SESSION_NOT_STARTED) {
-					usedUnits = 0;
-				} else if (state[oursession].getProductAllocation(ourProduct) < usedUnits) {
-					usedUnits = state[oursession].getProductAllocation(ourProduct);
-				}
-
-				// Every ADD_CREDIT_INTERVAL we add credit instead of using it...
-				if (state[oursession].getBalance() < 1000) {
-
-					final long extraCredit = chooseTopUpAmount(state[oursession].getBalance(), r);
-
-					AddCreditCallback addCreditCallback = new AddCreditCallback("AddCredit", state, oursession, offset);
-					mainClient.callProcedure(addCreditCallback, "AddCredit", oursession + offset, extraCredit,
-							"AddCreditOnShortage" + "_" + state[oursession].getUserStatus() + "_" + tranCount + "_"
-									+ extraCredit);
-
+					AddCreditCallback addCreditCallback = new AddCreditCallback(users[randomuser]);
+					
+					mainClient.callProcedure(addCreditCallback, "AddCredit", randomuser, extraCredit,
+							"AddCreditOnShortage" + "_" + System.currentTimeMillis());
+					
 				} else {
-					// Otherwise report how much credit we used and ask for more...
-					state[oursession].startTran();
+					
+					reportUsageCount++;
+					
+					ReportQuotaUsageCallback reportUsageCallback = new ReportQuotaUsageCallback(users[randomuser]);
+					
+					 long unitsUsed = (int) (users[randomuser].currentlyReserved * 0.9);
+					 long unitsWanted = r.nextInt(100);
 
-					mainClient.callProcedure(ussc, "ReportQuotaUsage", oursession + offset, ourProduct, usedUnits,
-							requestUnits, sessionId, "ReportQuotaUsage" + "_" + state[oursession].getUserStatus() + "_"
-									+ tranCount + "_" + usedUnits + "_" + ourProduct);
-
+					 mainClient.callProcedure(reportUsageCallback, "ReportQuotaUsage", randomuser,  unitsUsed,unitsWanted,  users[randomuser].sessionId, 
+							"ReportQuotaUsage" + "_" + System.currentTimeMillis());
+					
+					
 				}
-
-				state[oursession].IncUserStatus();
-
-				tranCount++;
 			}
-
-			if (tranCount % 100000 == 1) {
-				msg("Transaction " + tranCount);
-
-			}
-
-			// See if we need to do global queries...
-			if (lastGlobalQueryMs + (globalQueryFreqSeconds * 1000) < System.currentTimeMillis()) {
-				lastGlobalQueryMs = System.currentTimeMillis();
-
-				queryUser(mainClient, GENERIC_QUERY_USER_ID);
-
-			}
-
+			
+			if (tranCount++ % 10000 == 0) {
+				msg("On transaction #" + tranCount);
+			};
 		}
-
-		msg(tranCount + " transactions done...");
-		msg("All entries in queue, waiting for it to drain...");
+		
+		msg("finished adding transactions to queue");
 		mainClient.drain();
-		msg("Queue drained...");
-
-		long transactionsPerMs = tranCount / (System.currentTimeMillis() - startMsRun);
-		msg("processed " + transactionsPerMs + " entries per ms while doing transactions...");
-		msg(inFlightCount + " events where a tx was in flight were observed");
-		msg("Waiting 10 seconds - if we are using XDCR we need to wait for remote transactions to reach us");
-		Thread.sleep(10000);
-
-		msg(getSummaryStats(shc, tpMs, transactionsPerMs).toString());
-
-		msg("Stats Histogram:");
-		msg(shc.toString());
-
-		return ((long) shc.get("ReportQuotaUsage").getLatencyAverage());
+		msg("Queue drained");
+		
+		long elapsedTimeMs = System.currentTimeMillis() - startMsRun;
+		msg("Processed " + tranCount + " transactions in " + elapsedTimeMs + " milliseconds" );
+		
+		long tps = (tranCount * 1000 / elapsedTimeMs );
+		
+		msg("TPS = " + tps );
+		
+		msg("Add Credit calls = " + addCreditCount );
+		msg("Report Usage calls = " + reportUsageCount );
+		msg("Skipped because transaction was in flight = " + inFlightCount );
+		
+		
+		
+		
+		return tps;
 	}
 
-	protected static long runKVBenchmark(int userCount, int offset, int tpMs, int durationSeconds,
+	protected static long runKVBenchmark(int userCount,  int tpMs, int durationSeconds,
 			int globalQueryFreqSeconds, int jsonsize, Client mainClient, int updateProportion)
 			throws InterruptedException, IOException, NoConnectionsException, ProcCallException {
 
 		long lastGlobalQueryMs = 0;
 
 		UserKVState[] userState = new UserKVState[userCount];
-
-		SafeHistogramCache shc = SafeHistogramCache.getInstance();
 
 		Random r = new Random();
 		
@@ -578,44 +515,42 @@ public class BaseChargingDemo {
 		msg("Waiting 10 seconds - if we are using XDCR we need to wait for remote transactions to reach us");
 		Thread.sleep(10000);
 
-		msg(getSummaryStats(shc, tpMs, transactionsPerMs).toString());
-
+	
 		msg("Stats Histogram:");
-		msg(shc.toString());
 
-		return ((long) shc.get("GetAndLockUser").getLatencyAverage());
+		return 0; //TODO
 	}
 
 	private static long getNewLoyaltyCardNumber(Random r) {
 		return System.currentTimeMillis() % 10000000;
 	}
 
-	private static StringBuffer getSummaryStats(SafeHistogramCache shc, int tpMs, long transactionsPerMs) {
-		StringBuffer oneLineSummary = new StringBuffer("GREPABLE SUMMARY:");
-
-		oneLineSummary.append(tpMs);
-		oneLineSummary.append(':');
-
-		oneLineSummary.append(transactionsPerMs);
-		oneLineSummary.append(':');
-
-		getProcPercentiles(shc, oneLineSummary, "ReportQuotaUsage");
-
-		getProcPercentiles(shc, oneLineSummary, "UpdateSession");
-
-		getProcPercentiles(shc, oneLineSummary, "GetUser");
-
-		getProcPercentiles(shc, oneLineSummary, "GetAndLockUser");
-
-		getProcPercentiles(shc, oneLineSummary, "GetAndLockUser:OK");
-
-		getProcPercentiles(shc, oneLineSummary, "GetAndLockUser:Fail");
-
-		getProcPercentiles(shc, oneLineSummary, "UpdateLockedUser");
-
-		getProcPercentiles(shc, oneLineSummary, "ShowCurrentAllocations__promBL");
-
-		return oneLineSummary;
-	}
+//	private static StringBuffer getSummaryStats(SafeHistogramCache shc, int tpMs, long transactionsPerMs) {
+//		StringBuffer oneLineSummary = new StringBuffer("GREPABLE SUMMARY:");
+//
+//		oneLineSummary.append(tpMs);
+//		oneLineSummary.append(':');
+//
+//		oneLineSummary.append(transactionsPerMs);
+//		oneLineSummary.append(':');
+//
+//		getProcPercentiles(shc, oneLineSummary, "ReportQuotaUsage");
+//
+//		getProcPercentiles(shc, oneLineSummary, "UpdateSession");
+//
+//		getProcPercentiles(shc, oneLineSummary, "GetUser");
+//
+//		getProcPercentiles(shc, oneLineSummary, "GetAndLockUser");
+//
+//		getProcPercentiles(shc, oneLineSummary, "GetAndLockUser:OK");
+//
+//		getProcPercentiles(shc, oneLineSummary, "GetAndLockUser:Fail");
+//
+//		getProcPercentiles(shc, oneLineSummary, "UpdateLockedUser");
+//
+//		getProcPercentiles(shc, oneLineSummary, "ShowCurrentAllocations__promBL");
+//
+//		return oneLineSummary;
+//	}
 
 }

@@ -44,8 +44,8 @@ public class CreateChargingDemoData extends BaseChargingDemo {
 
 		msg("Parameters:" + Arrays.toString(args));
 
-		if (args.length != 6 ) {
-			msg("Usage: hostnames recordcount offset tpms  loblength  initialcredit ");
+		if (args.length != 4 ) {
+			msg("Usage: hostnames recordcount tpms  initialcredit ");
 			System.exit(1);
 		}
 
@@ -55,28 +55,22 @@ public class CreateChargingDemoData extends BaseChargingDemo {
 		// How many users
 		int userCount = Integer.parseInt(args[1]);
 
-		// Used to allow multiple copies of client to run at once. Makes demo start
-		// creating ids
-		// from 'offset' instead of zero.
-		int offset = Integer.parseInt(args[2]);
-
 		// Target transactions per millisecond.
-		int tpMs = Integer.parseInt(args[3]);
+		int tpMs = Integer.parseInt(args[2]);
 
 		// How long our arbitrary JSON payload will be.
-		int loblength = Integer.parseInt(args[4]);
+		int loblength = 120;
 		final String ourJson = getExtraUserDataAsJsonString(loblength, gson, r);
 
 		// Default credit users are 'born' with
-		int initialCredit = Integer.parseInt(args[5]);
+		int initialCredit = Integer.parseInt(args[3]);
 	
 		try {
 			// A VoltDB Client object maintains multiple connections to all the
 			// servers in the cluster.
 			Client mainClient = connectVoltDB(hostlist);
 			
-			confirmMetadataExists(mainClient);		
-			upsertAllUsers(userCount, offset, tpMs, ourJson, initialCredit, mainClient);
+			upsertAllUsers(userCount, tpMs, ourJson, initialCredit, mainClient);
 
 			msg("Closing connection...");
 			mainClient.close();

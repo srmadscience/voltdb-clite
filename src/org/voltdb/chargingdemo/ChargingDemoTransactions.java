@@ -37,8 +37,8 @@ public class ChargingDemoTransactions extends BaseChargingDemo {
 
 		msg("Parameters:" + Arrays.toString(args));
 
-		if (args.length != 6) {
-			msg("Usage: hostnames recordcount offset tpms durationseconds queryseconds");
+		if (args.length != 5) {
+			msg("Usage: hostnames recordcount tpms durationseconds queryseconds");
 			System.exit(1);
 		}
 
@@ -48,24 +48,14 @@ public class ChargingDemoTransactions extends BaseChargingDemo {
 		// How many users
 		int userCount = Integer.parseInt(args[1]);
 
-		// Used to allow multiple copies of client to run at once. Makes demo start
-		// creating ids
-		// from 'offset' instead of zero.
-		int offset = Integer.parseInt(args[2]);
-
 		// Target transactions per millisecond.
-		int tpMs = Integer.parseInt(args[3]);
+		int tpMs = Integer.parseInt(args[2]);
 
 		// Runtime for TRANSACTIONS in seconds.
-		int durationSeconds = Integer.parseInt(args[4]);
+		int durationSeconds = Integer.parseInt(args[3]);
 
 		// How often we do global queries...
-		int globalQueryFreqSeconds = Integer.parseInt(args[5]);
-
-		// In some cases we might want to run a check at the
-		// end of the benchmark that all of our transactions did in fact happen.
-		// the 'state' array contains a model of what things *ought* to look like.
-		UserTransactionState[] state = new UserTransactionState[userCount];
+		int globalQueryFreqSeconds = Integer.parseInt(args[4]);
 
 		try {
 			// A VoltDB Client object maintains multiple connections to all the
@@ -74,7 +64,7 @@ public class ChargingDemoTransactions extends BaseChargingDemo {
 
 			clearUnfinishedTransactions(mainClient);
 
-			runTransactionBenchmark(userCount, offset, tpMs, durationSeconds, globalQueryFreqSeconds, state,
+			runTransactionBenchmark(userCount, tpMs, durationSeconds, globalQueryFreqSeconds, 
 					mainClient);
 
 			msg("Closing connection...");

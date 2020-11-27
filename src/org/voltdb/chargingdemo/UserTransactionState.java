@@ -37,95 +37,43 @@ import chargingdemoprocs.ReferenceData;
  */
 public class UserTransactionState {
 
-  /**
-   * Identifies this as a new user
-   */
-  static final int STATUS_NEW_USER = 0;
-
-  /**
-   * Used when we don't know session yet...
-   */
-  public static final long SESSION_NOT_STARTED = -1;
-
-  /**
-   * Used to report stats
-   */
-  SafeHistogramCache shc = SafeHistogramCache.getInstance();
-
+  
   /**
    * ID of user.
    */
-  int id = 0;
+  public int id = 0;
 
-  /**
-   * How many transactions we've for this user. Increments by 1 each time...
-   */
-  int userStatus = 0;
-
-  /**
-   * Each user has multiple products, each of which has its own sessionId, which
-   * is created by ReportQuotaUsage. The session Ids are used so we know to
-   * cancel reservations when we report usage.
-   */
-  private long[] productSessionIds = new long[ChargingDemoTransactions.PRODUCT_NAMES.length];
-
-  private long[] productAllocations = new long[ChargingDemoTransactions.PRODUCT_NAMES.length];
-
+ 
+  public long sessionId = -1;
+  
   /**
    * When a transaction started, or zero if there isn't one.
    */
-  long txStartMs = 0;
+  public long txStartMs = 0;
 
   /**
-   * Balance, not including effects of in flight transactions. Is updated
-   * by UpdateSession and ReportQuotaUsage.
+   * Balance,
    */
-  long balance = 0;
+  public long spendableBalance = 0;
+  
+  public long currentlyReserved = 0;
 
   /**
    * Create a record for a user.
    * 
    * @param id
    */
-  public UserTransactionState(int id, int balance) {
+  public UserTransactionState(int id,long spendableBalance) {
     this.id = id;
-    this.balance = balance;
-    userStatus = STATUS_NEW_USER;
-
-    for (int i = 0; i < productSessionIds.length; i++) {
-      productSessionIds[i] = SESSION_NOT_STARTED;
-      productAllocations[i] = 0;
-    }
-  }
+    this.spendableBalance =  spendableBalance;
+   }
 
   /**
    * Report start of transaction.
    */
   public void startTran() {
 
-    if (isTxInFlight()) {
-      shc.incCounter("Multiple Transactions in flight at once");
-    }
-
     txStartMs = System.currentTimeMillis();
-  }
-
-  /**
-   * Get the VoltDb generated Session ID for this user/product.
-   * 
-   * @param productId
-   * @return session Id
-   * @throws SessionidNotAvailableYetException
-   *           if a transaction is in flight.
-   */
-  public long getProductSessionId(int productId) {
-    
-    return productSessionIds[productId];
-  }
-  
-public long getProductAllocation(int productId) {
-    
-    return productAllocations[productId];
   }
 
   /**
@@ -148,58 +96,23 @@ public long getProductAllocation(int productId) {
    * @param sessionid
    * @param statusByte
    */
-  public void reportEndTransaction(int productId, long sessionid, byte statusByte, long allocation) {
+  public void reportEndTransaction(long sessionid, byte statusByte, long spendableBalance) {
 
-    if (productSessionIds[productId] != SESSION_NOT_STARTED) {
-      // We don't track the latency for the first call as mutiple requests
-      // in flight at once...
-      shc.reportLatency("ReportQuotaUsage", txStartMs, "", 250);
-    }
-
-    
-    productSessionIds[productId] = sessionid;
-    productAllocations[productId] = allocation;
-
-    if (statusByte == ReferenceData.STATUS_ALL_UNITS_ALLOCATED) {
-      shc.reportLatency("STATUS_ALL_UNITS_ALLOCATED", txStartMs, "", 50);
-    } else if (statusByte == ReferenceData.STATUS_SOME_UNITS_ALLOCATED) {
-      shc.reportLatency("STATUS_SOME_UNITS_ALLOCATED", txStartMs, "", 50);
-    } else if (statusByte == ReferenceData.STATUS_NO_MONEY) {
-      shc.reportLatency("STATUS_NO_MONEY", txStartMs, "", 50);
-    }
-
+ 
     txStartMs = 0;
+    this.sessionId = sessionid;
+    this.spendableBalance = spendableBalance;
 
   }
 
-  public int getUserStatus() {
-    return userStatus;
-  }
 
-  public void IncUserStatus() {
-    userStatus++;
-  }
+public void endTran() {
+	txStartMs = 0;
+	
+}
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
-  @Override
-  public String toString() {
-    String desc = "UserState [id=" + id + ", userStatus=" + userStatus + ", productSessionIds="
-        + Arrays.toString(productSessionIds) + ", txStartMs=" + txStartMs + ", balance=" + balance + "]";
 
-    return desc;
-  }
 
-  public void reportBalance(long balance) {
-    this.balance = balance;
 
-  }
-
-  public long getBalance() {
-    return balance;
-  }
-
+  
 }

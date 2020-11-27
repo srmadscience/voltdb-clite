@@ -1,68 +1,76 @@
 package org.voltdb.chargingdemo.calbacks;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.voltdb.VoltTable;
 import org.voltdb.chargingdemo.UserTransactionState;
 import org.voltdb.client.ClientResponse;
+import org.voltdb.client.ProcedureCallback;
 
-public class AddCreditCallback extends ReportLatencyCallback {
+import chargingdemoprocs.ReferenceData;
 
-  UserTransactionState[] state = null;
+public class AddCreditCallback implements ProcedureCallback {
 
-  int userId = 0;
-  int offset = 0;
+	UserTransactionState userTransactionState;
 
-  public AddCreditCallback(String statname, UserTransactionState[] state, int userId, int offset) {
-    super(statname);
-    this.state = state;
-    this.userId = userId;
-    this.offset = offset;
-  }
+	public AddCreditCallback(UserTransactionState userTransactionState) {
+		this.userTransactionState = userTransactionState;
+	}
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.voltdb.chargingdemo.ReportLatencyCallback#clientCallback(org.voltdb.
-   * client.ClientResponse)
-   */
-  @Override
-  public void clientCallback(ClientResponse arg0) throws Exception {
-    super.clientCallback(arg0);
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.voltdb.chargingdemo.ReportLatencyCallback#clientCallback(org.voltdb.
+	 * client.ClientResponse)
+	 */
+	public void clientCallback(ClientResponse arg0) throws Exception {
 
-    VoltTable balanceTable = arg0.getResults()[2];
-    VoltTable reservationTable = arg0.getResults()[3];
+		if (arg0.getStatus() == ClientResponse.SUCCESS) {
 
-    if (balanceTable.advanceRow()) {
-      
-      int userid = (int) balanceTable.getLong("userid");
-      
-      long validatedBalance = balanceTable.getLong("USER_VALIDATED_BALANCE");
-      long utAmount = balanceTable.getLong("ut_amount");
-      
-      long currentlyAllocated = 0;
-      
-      if (reservationTable.advanceRow()) {
-    	  currentlyAllocated = reservationTable.getLong("allocated");
-    	  if (reservationTable.wasNull()) {
-    		  currentlyAllocated = 0;
-    	  }
-      }
+			if (arg0.getAppStatus() == ReferenceData.CREDIT_ADDED) {
 
-      synchronized (state) {
-        state[userid - offset].reportBalance(validatedBalance + utAmount - currentlyAllocated );
-      }
+				userTransactionState.endTran();
 
-    }
-  }
+				VoltTable balanceTable = arg0.getResults()[arg0.getResults().length - 2];
+				VoltTable reservationTable = arg0.getResults()[arg0.getResults().length - 1];
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
-  @Override
-  public String toString() {
-    return super.toString();
-  }
+				if (balanceTable.advanceRow()) {
+
+					long balance = balanceTable.getLong("balance");
+					long reserved = 0;
+
+					if (reservationTable.advanceRow()) {
+						reserved = reservationTable.getLong("allocated_amount");
+						if (reservationTable.wasNull()) {
+							reserved = 0;
+						}
+					}
+
+					userTransactionState.currentlyReserved = reserved;
+					userTransactionState.spendableBalance = balance - reserved;
+
+				}
+			} else {
+				msg("AddCreditCallback user=" + userTransactionState.id + ":" + arg0.getAppStatusString());
+			}
+		} else {
+			msg("AddCreditCallback user=" + userTransactionState.id + ":" + arg0.getStatusString());
+		}
+	}
+
+	/**
+	 * Print a formatted message.
+	 * 
+	 * @param message
+	 */
+	public static void msg(String message) {
+
+		SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Date now = new Date();
+		String strDate = sdfDate.format(now);
+		System.out.println(strDate + ":" + message);
+
+	}
 
 }
