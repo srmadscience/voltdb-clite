@@ -68,10 +68,6 @@ public class DeleteChargingDemoData extends BaseChargingDemo {
 
 			}
 
-			mainClient.callProcedure("@AdHoc", "DELETE FROM product_table;");
-
-			mainClient.callProcedure("@AdHoc", "DELETE FROM cluster_table;");
-
 			msg("Closing connection...");
 			mainClient.close();
 
