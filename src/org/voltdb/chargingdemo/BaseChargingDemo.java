@@ -49,50 +49,9 @@ import chargingdemoprocs.ExtraUserData;
 
 public class BaseChargingDemo {
 
-//	// Possible values for 'TASK'
-//	public static final String TASK_TRANSACTIONS = "TRANSACTIONS";
-//	public static final String TASK_USERS = "USERS";
-//	public static final String TASK_RUN = "RUN";
-//	public static final String TASK_DELETE = "DELETE";
-//
-//	public static final String[] PRODUCT_NAMES = { "Our Web Site", "SMS messages", "Domestic Internet Access per GB",
-//			"Roaming Internet Access per GB", "Domestic calls per minute" };
-//
-//	public static final int[] PRODUCT_PRICES = { 0, 1, 20, 342, 3 };
-//
-//	public static final String[] CLUSTER_NAMES = { "notxdcr", "jersey", "badger", "rosal" }; // TODO
-//
-//	public static final int[] CLUSTER_IDS = { 0, 4, 5, 6 }; // TODO
-//
-//	public static final int[] WATCHED_BY_CLUSTER_IDS = { 0, 5, 6, 4 }; // TODO
 
 	protected static final long GENERIC_QUERY_USER_ID = 42;
 
-	protected static long chooseTopUpAmount(long balance, Random r) {
-		if (balance > 0) {
-			return 100 + r.nextInt(3000);
-		}
-
-		return 100 + r.nextInt(3000) + (-1 * balance);
-
-	}
-
-//	/**
-//	 * @param shc
-//	 * @param oneLineSummary
-//	 */
-//	protected static void getProcPercentiles(SafeHistogramCache shc, StringBuffer oneLineSummary, String procName) {
-//
-//		StatsHistogram rqu = shc.get(procName);
-//		oneLineSummary.append((int) rqu.getLatencyAverage());
-//		oneLineSummary.append(':');
-//
-//		oneLineSummary.append(rqu.getLatencyPct(50));
-//		oneLineSummary.append(':');
-//
-//		oneLineSummary.append(rqu.getLatencyPct(99));
-//		oneLineSummary.append(':');
-//	}
 
 	/**
 	 * Print a formatted message.
@@ -281,7 +240,6 @@ public class BaseChargingDemo {
 
 		// Query user #queryUserId...
 		msg("Query card #" + cardId + "...");
-		final long startQueryUserMs = System.currentTimeMillis();
 		ClientResponse userResponse = mainClient.callProcedure("FindByLoyaltyCard", cardId);
 
 		for (int i = 0; i < userResponse.getResults().length; i++) {
@@ -523,32 +481,6 @@ public class BaseChargingDemo {
 		return System.currentTimeMillis() % 10000000;
 	}
 
-//	private static StringBuffer getSummaryStats(SafeHistogramCache shc, int tpMs, long transactionsPerMs) {
-//		StringBuffer oneLineSummary = new StringBuffer("GREPABLE SUMMARY:");
-//
-//		oneLineSummary.append(tpMs);
-//		oneLineSummary.append(':');
-//
-//		oneLineSummary.append(transactionsPerMs);
-//		oneLineSummary.append(':');
-//
-//		getProcPercentiles(shc, oneLineSummary, "ReportQuotaUsage");
-//
-//		getProcPercentiles(shc, oneLineSummary, "UpdateSession");
-//
-//		getProcPercentiles(shc, oneLineSummary, "GetUser");
-//
-//		getProcPercentiles(shc, oneLineSummary, "GetAndLockUser");
-//
-//		getProcPercentiles(shc, oneLineSummary, "GetAndLockUser:OK");
-//
-//		getProcPercentiles(shc, oneLineSummary, "GetAndLockUser:Fail");
-//
-//		getProcPercentiles(shc, oneLineSummary, "UpdateLockedUser");
-//
-//		getProcPercentiles(shc, oneLineSummary, "ShowCurrentAllocations__promBL");
-//
-//		return oneLineSummary;
-//	}
+
 
 }
