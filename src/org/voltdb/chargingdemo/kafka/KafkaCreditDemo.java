@@ -69,7 +69,6 @@ public class KafkaCreditDemo {
 		
 		while (endtimeMs > System.currentTimeMillis()) {
 			
-			tranCount++;
 
 			if (tpThisMs++ > tpms) {
 
@@ -94,6 +93,10 @@ public class KafkaCreditDemo {
 					request);
 			
 			producer.send(newrec);
+			
+			if (tranCount++ % 10000 == 0) {
+				msg("On transaction# " + tranCount + ", user,amount,txnid= " + request);
+			}
 
 		}
 		
