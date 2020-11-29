@@ -370,7 +370,7 @@ public class BaseChargingDemo {
 				}
 			}
 			
-			if (tranCount++ % 10000 == 0) {
+			if (tranCount++ % 100000 == 0) {
 				msg("On transaction #" + tranCount);
 			};
 		}

@@ -50,16 +50,28 @@ public class ReportQuotaUsageCallback implements ProcedureCallback {
 	@Override
 	public void clientCallback(ClientResponse arg0) throws Exception {
 
+		// if the call worked....
 		if (arg0.getStatus() == ClientResponse.SUCCESS) {
 
+			// if we have an expected response...
 			if (arg0.getAppStatus() == ReferenceData.STATUS_ALL_UNITS_ALLOCATED
 					|| arg0.getAppStatus() == ReferenceData.STATUS_SOME_UNITS_ALLOCATED
 					|| arg0.getAppStatus() == ReferenceData.STATUS_NO_MONEY
 					|| arg0.getAppStatus() == ReferenceData.STATUS_OK) {
 
+				// Report latency for users whose id is divisible by 500000...
+				if (userTransactionState.id % 500000 == 0) {
+					msg("ReportUsageCreditCallback user=" + userTransactionState.id + " transaction took "
+							+ (System.currentTimeMillis() - userTransactionState.txStartMs) + "ms");
+				}
+
+				// Mark transaction as finished so we can start another one
 				userTransactionState.endTran();
 
+				// Get balance for user, based on finished transactions.
 				VoltTable balanceTable = arg0.getResults()[arg0.getResults().length - 2];
+				
+			    // Get total value of outstanding reservations  
 				VoltTable reservationTable = arg0.getResults()[arg0.getResults().length - 1];
 
 				if (balanceTable.advanceRow()) {
@@ -79,12 +91,23 @@ public class ReportQuotaUsageCallback implements ProcedureCallback {
 					userTransactionState.currentlyReserved = reserved;
 					userTransactionState.spendableBalance = balance - reserved;
 
+					// We should never see a negative balance...
+					if (userTransactionState.spendableBalance < 0) {
+						msg("ReportUsageCreditCallback user=" + userTransactionState.id + ": negative balance of "
+								+ userTransactionState.spendableBalance + " seen");
+					}
+
 				} else {
-					msg("ReportUsageCreditCallback user=" + userTransactionState.id + ":" + arg0.getAppStatusString());
+					// We should never detect a nonexistent balance...
+					msg("ReportUsageCreditCallback user=" + userTransactionState.id + ": doesn't have a balance");
 				}
 
-			} 
+			} else {
+				// We got an app status code we weren't expecting... should never happen..
+				msg("ReportUsageCreditCallback user=" + userTransactionState.id + ":" + arg0.getAppStatusString());
+			}
 		} else {
+			// We got some form of Volt error code.
 			msg("ReportUsageCreditCallback user=" + userTransactionState.id + ":" + arg0.getStatusString());
 		}
 	}
