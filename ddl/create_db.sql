@@ -29,8 +29,6 @@ USING TTL 25 MINUTES ON COLUMN lastdate;
 
 CREATE INDEX ust_del_idx1 ON user_usage_table(lastdate);
 
-CREATE INDEX ust_del_idx2 ON user_usage_table(lastdate) WHERE NOT MIGRATING;
-
 PARTITION TABLE user_usage_table ON COLUMN userid;
 
 CREATE INDEX uut_ix1 ON user_usage_table(userid, lastdate);

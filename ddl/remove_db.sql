@@ -2,46 +2,44 @@
 
 file -inlinebatch END_OF_BATCH
 
-DROP procedure showTransactions;
+DROP procedure FindByLoyaltyCard IF EXISTS;
 
-DROP procedure FindByLoyaltyCard;
+DROP PROCEDURE ShowCurrentAllocations__promBL IF EXISTS;
 
-DROP PROCEDURE ShowCurrentAllocations__promBL;
-
-DROP PROCEDURE GetUser;
+DROP PROCEDURE GetUser IF EXISTS;
    
-DROP PROCEDURE GetAndLockUser;
+DROP PROCEDURE GetAndLockUser IF EXISTS;
    
-DROP PROCEDURE UpdateLockedUser;
+DROP PROCEDURE UpdateLockedUser IF EXISTS;
    
-DROP PROCEDURE UpsertUser;
+DROP PROCEDURE UpsertUser IF EXISTS;
    
-DROP PROCEDURE DelUser;
+DROP PROCEDURE DelUser IF EXISTS;
    
-DROP PROCEDURE ReportQuotaUsage;  
+DROP PROCEDURE ReportQuotaUsage IF EXISTS;  
    
-DROP PROCEDURE AddCredit;  
+DROP PROCEDURE AddCredit IF EXISTS;  
 
-DROP view user_balance; 
+DROP view user_balance IF EXISTS; 
 
-DROP view allocated_credit;
+DROP view allocated_credit IF EXISTS;
 
-DROP view recent_activity_in;
+DROP view recent_activity_in IF EXISTS;
 
-DROP view recent_activity_out;
+DROP view recent_activity_out IF EXISTS;
 
-DROP view cluster_activity_by_users;
+DROP view cluster_activity_by_users IF EXISTS;
 
-DROP view cluster_activity;
+DROP view cluster_activity IF EXISTS;
 
-DROP view last_cluster_activity;
+DROP view last_cluster_activity IF EXISTS;
 
-DROP view cluster_users;
+DROP view cluster_users IF EXISTS;
    
-DROP table user_table;
-DROP table user_usage_table;
-DROP table user_recent_transactions;
-DROP STREAM user_financial_events;
+DROP table user_table IF EXISTS;
+DROP table user_usage_table IF EXISTS;
+DROP table user_recent_transactions IF EXISTS;
+DROP STREAM user_financial_events IF EXISTS;
 
 
 
