@@ -23,6 +23,10 @@ package chargingdemoprocs;
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+/**
+ * Class that gets stored as JSON data.
+ *
+ */
 public class ExtraUserData {
 	
 	public static final String NEW_LOYALTY_NUMBER = "NEW_LOYALTY_NUMBER";

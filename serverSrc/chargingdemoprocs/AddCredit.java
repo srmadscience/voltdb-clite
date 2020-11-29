@@ -78,7 +78,7 @@ public class AddCredit extends VoltProcedure {
 		// Sanity Check: Has this transaction already happened?
 		if (userAndTxn[1].advanceRow()) {
 
-			this.setAppStatusCode(ReferenceData.TXN_ALREADY_HAPPENED);
+			this.setAppStatusCode(ReferenceData.STATUS_TXN_ALREADY_HAPPENED);
 			this.setAppStatusString(
 					"Event already happened at " + userAndTxn[1].getTimestampAsTimestamp("txn_time").toString());
 			voltQueueSQL(reportFinancialEvent, userId, extraCredit, txnId, "Credit already added");

@@ -38,11 +38,11 @@ public class UpdateLockedUser extends VoltProcedure {
 
 	public static final SQLStmt getUser = new SQLStmt("SELECT userid ,user_json_object "
 			+ ",user_last_seen,user_softlock_sessionid,user_softlock_expiry, now the_current_timestamp "
-			+ "FROM user_table " + "WHERE userid = ?;");
+			+ "FROM user_table WHERE userid = ?;");
 
 	public static final SQLStmt removeUserLockAndUpdateJSON = new SQLStmt(
-			"UPDATE user_table " + "SET user_softlock_sessionid = NULL " + "   ,user_softlock_expiry = NULL "
-					+ "   ,user_json_object = ? " + "WHERE userid = ?;");
+			"UPDATE user_table SET user_softlock_sessionid = NULL, user_softlock_expiry = NULL "
+					+ "   ,user_json_object = ? WHERE userid = ?;");
 
 	Gson gson = new Gson();
 
@@ -99,7 +99,7 @@ public class UpdateLockedUser extends VoltProcedure {
 
 		} else {
 
-			this.setAppStatusCode(ReferenceData.RECORD_HAS_BEEN_SOFTLOCKED);
+			this.setAppStatusCode(ReferenceData.STATUS_RECORD_HAS_BEEN_SOFTLOCKED);
 			this.setAppStatusString("User " + userId + " currently locked by session " + lockingSessionId
 					+ ". Expires at " + lockingSessionExpiryTimestamp.toString());
 

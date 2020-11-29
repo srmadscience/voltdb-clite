@@ -45,23 +45,11 @@ public class UpsertUser extends VoltProcedure {
 					+ "VALUES (?,?,?);");
 
 	public static final SQLStmt reportAddcreditEvent = new SQLStmt(
-			"INSERT INTO user_financial_events " + "(userid,amount,user_txn_id,message) VALUES (?,?,?,?);");
+			"INSERT INTO user_financial_events (userid,amount,user_txn_id,message) VALUES (?,?,?,?);");
 
 	// @formatter:on
 
-	/**
-	 * Upsert a user.
-	 * 
-	 * @param userId
-	 * @param addBalance
-	 * @param isNew
-	 * @param json
-	 * @param purpose
-	 * @param lastSeen
-	 * @param txnId
-	 * @return
-	 * @throws VoltAbortException
-	 */
+
 	public VoltTable[] run(long userId, long addBalance, String json, String purpose, TimestampType lastSeen,
 			String txnId) throws VoltAbortException {
 
@@ -74,7 +62,7 @@ public class UpsertUser extends VoltProcedure {
 
 		if (results[1].advanceRow()) {
 
-			this.setAppStatusCode(ReferenceData.TXN_ALREADY_HAPPENED);
+			this.setAppStatusCode(ReferenceData.STATUS_TXN_ALREADY_HAPPENED);
 			this.setAppStatusString(
 					"Event already happened at " + results[1].getTimestampAsTimestamp("txn_time").toString());
 

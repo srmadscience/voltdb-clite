@@ -52,7 +52,7 @@ public class ReportQuotaUsage extends VoltProcedure {
 			"DELETE FROM user_usage_table WHERE userid = ? AND lastdate < DATEADD(MINUTE, -5, NOW);");
 
 	public static final SQLStmt reportFinancialEvent = new SQLStmt(
-			"INSERT INTO user_financial_events " + "(userid,amount,user_txn_id,message) VALUES (?,?,?,?);");
+			"INSERT INTO user_financial_events (userid,amount,user_txn_id,message) VALUES (?,?,?,?);");
 
 	public static final SQLStmt createAllocation = new SQLStmt("INSERT INTO user_usage_table "
 			+ "(userid, allocated_amount,sessionid, lastdate) VALUES (?,?,?,NOW);");
@@ -80,7 +80,7 @@ public class ReportQuotaUsage extends VoltProcedure {
 
 		// Sanity Check: Is this a re-send of a transaction we've already done?
 		if (results1[1].advanceRow()) {
-			this.setAppStatusCode(ReferenceData.TXN_ALREADY_HAPPENED);
+			this.setAppStatusCode(ReferenceData.STATUS_TXN_ALREADY_HAPPENED);
 			this.setAppStatusString(
 					"Event already happened at " + results1[1].getTimestampAsTimestamp("txn_time").toString());
 			return voltExecuteSQL(true);

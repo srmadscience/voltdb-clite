@@ -24,10 +24,8 @@ package chargingdemoprocs;
  */
 
 /**
- * Location for possible response codes.
+ * Possible response codes.
  * 
- * @author drolfe
- *
  */
 public class ReferenceData {
 
@@ -36,15 +34,11 @@ public class ReferenceData {
 	public static final byte STATUS_NO_MONEY = 43;
 	public static final byte STATUS_SOME_UNITS_ALLOCATED = 44;
 	public static final byte STATUS_ALL_UNITS_ALLOCATED = 45;
-	public static final byte TXN_ALREADY_HAPPENED = 46;
-
-	public static final byte USER_DOESNT_EXIST = 50;
-	public static final byte PRODUCT_DOESNT_EXIST = 51;
-	public static final byte USER_NO_FINHIST = 52;
-	public static final byte RECORD_ALREADY_SOFTLOCKED = 53;
-	public static final byte RECORD_HAS_BEEN_SOFTLOCKED = 54;
-	public static final byte USER_EXISTS_BUT_SHOULDNT = 55;
-	public static final byte CREDIT_ADDED = 56;
+	public static final byte STATUS_TXN_ALREADY_HAPPENED = 46;
+	public static final byte STATUS_USER_DOESNT_EXIST = 50;
+	public static final byte STATUS_RECORD_ALREADY_SOFTLOCKED = 53;
+	public static final byte STATUS_RECORD_HAS_BEEN_SOFTLOCKED = 54;
+	public static final byte STATUS_CREDIT_ADDED = 56;
 
 	public static final int LOCK_TIMEOUT_MS = 50;
 

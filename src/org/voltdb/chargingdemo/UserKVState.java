@@ -28,23 +28,22 @@ import org.voltdb.client.ProcedureCallback;
 
 import chargingdemoprocs.ReferenceData;
 
-
 /**
- * Class to keep track of how many transactions a given user has. It also keeps
- * track of whether a transaction is in progress and when it started.
- *
+ * Class to keep track of a user's state. It implements ProcedureCallback, which
+ * means the clientCallback method is called when callProcedure finishes.
  *
  */
 public class UserKVState implements ProcedureCallback {
 
 	static final byte STATUS_UNLOCKED = 0;
-
 	static final byte STATUS_TRYING_TO_LOCK = 1;
-
 	static final byte STATUS_LOCKED = 2;
-
 	static final byte STATUS_UPDATING = 3;
 
+	/**
+	 * Unique ID given to us by VoltDB that we use to prove that we are the owner of
+	 * this lock.
+	 */
 	String lockId = null;
 
 	/**
@@ -53,7 +52,7 @@ public class UserKVState implements ProcedureCallback {
 	int id = 0;
 
 	/**
-	 * How many transactions we've for this user. Increments by 1 each time...
+	 * Where we are in the update cycle..
 	 */
 	int userState = STATUS_UNLOCKED;
 
@@ -82,7 +81,7 @@ public class UserKVState implements ProcedureCallback {
 	 */
 	public void startTran() {
 
-			txStartMs = System.currentTimeMillis();
+		txStartMs = System.currentTimeMillis();
 	}
 
 	/**
@@ -108,8 +107,8 @@ public class UserKVState implements ProcedureCallback {
 	 */
 	@Override
 	public String toString() {
-		String desc = "UserState [id=" + id + ", userStatus=" + userState + ", lockId=" + lockId + ", productSessionIds=" + ", txStartMs="
-				+ txStartMs + " ]";
+		String desc = "UserState [id=" + id + ", userStatus=" + userState + ", lockId=" + lockId
+				+ ", productSessionIds=" + ", txStartMs=" + txStartMs + " ]";
 
 		return desc;
 	}
@@ -120,32 +119,28 @@ public class UserKVState implements ProcedureCallback {
 		if (arg0.getStatus() == ClientResponse.SUCCESS) {
 
 			byte statusByte = arg0.getAppStatus();
-			
 
 			if (userState == STATUS_UNLOCKED) {
-				
-				
+
 			} else if (userState == STATUS_TRYING_TO_LOCK) {
 
-				if (statusByte == ReferenceData.RECORD_HAS_BEEN_SOFTLOCKED
-						|| statusByte == ReferenceData.RECORD_ALREADY_SOFTLOCKED) {
+				if (statusByte == ReferenceData.STATUS_RECORD_HAS_BEEN_SOFTLOCKED
+						|| statusByte == ReferenceData.STATUS_RECORD_ALREADY_SOFTLOCKED) {
 
 					userState = STATUS_LOCKED;
 					lockId = arg0.getAppStatusString();
-	
+
 				} else {
 					userState = STATUS_UNLOCKED;
 				}
 			} else if (userState == STATUS_UPDATING) {
-				
+
 				lockId = "";
 				userState = STATUS_UNLOCKED;
-			} 
+			}
 
-			
+		}
 
-		} 
-		
 		txStartMs = 0;
 	}
 

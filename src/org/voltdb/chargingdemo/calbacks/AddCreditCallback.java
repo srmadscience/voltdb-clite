@@ -47,6 +47,7 @@ public class AddCreditCallback implements ProcedureCallback {
 	 * @see org.voltdb.chargingdemo.ReportLatencyCallback#clientCallback(org.voltdb.
 	 * client.ClientResponse)
 	 */
+	@Override
 	public void clientCallback(ClientResponse arg0) throws Exception {
 
 		if (arg0.getStatus() == ClientResponse.SUCCESS) {

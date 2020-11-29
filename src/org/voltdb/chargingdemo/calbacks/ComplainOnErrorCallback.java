@@ -1,5 +1,7 @@
 package org.voltdb.chargingdemo.calbacks;
 
+import org.voltdb.chargingdemo.BaseChargingDemo;
+
 /* This file is part of VoltDB.
  * Copyright (C) 2008-2020 VoltDB Inc.
  *
@@ -64,7 +66,7 @@ public class ComplainOnErrorCallback implements ProcedureCallback {
     public void clientCallback(ClientResponse arg0) throws Exception {
         
         if (arg0.getStatus() != ClientResponse.SUCCESS) {
-            ChargingDemoTransactions.msg("Error Code " + arg0.getStatusString());
+            BaseChargingDemo.msg("Error Code " + arg0.getStatusString());
         }
 
     }

@@ -28,8 +28,6 @@ package org.voltdb.chargingdemo;
 import java.util.Arrays;
 import org.voltdb.client.Client;
 
-import com.google.gson.Gson;
-
 public class ChargingDemoKVStore extends BaseChargingDemo {
 
 	/**

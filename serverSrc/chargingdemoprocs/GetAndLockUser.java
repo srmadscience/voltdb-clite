@@ -37,6 +37,9 @@ public class GetAndLockUser extends VoltProcedure {
     public static final SQLStmt getAllTxn = new SQLStmt("SELECT user_txn_id, txn_time "
         + "FROM user_recent_transactions "
         + "WHERE userid = ? ORDER BY txn_time, user_txn_id;");
+    
+	public static final SQLStmt getUserUsage = new SQLStmt(
+			"SELECT * FROM user_usage_table WHERE userid = ? ORDER BY sessionid;");
 
     public static final SQLStmt upsertUserLock = new SQLStmt("UPDATE user_table "
         + "SET user_softlock_sessionid = ? "
@@ -50,7 +53,7 @@ public class GetAndLockUser extends VoltProcedure {
    * and an internally generated lock id that is used to do updates.
    * 
    * @param userId
-   * @return
+   * @return lockid (accessibe via ClientStatus.getAppStatusString())
    * @throws VoltAbortException
    */
   public VoltTable[] run(long userId) throws VoltAbortException {
@@ -67,21 +70,26 @@ public class GetAndLockUser extends VoltProcedure {
     final TimestampType currentTimestamp = new TimestampType(this.getTransactionTime());
     final TimestampType lockingSessionExpiryTimestamp = userRecord[0].getTimestampAsTimestamp("user_softlock_expiry");
 
+    // If somebody has locked this session and the lock hasn't expired complain...
     if (lockingSessionExpiryTimestamp != null && lockingSessionExpiryTimestamp.compareTo(currentTimestamp) > 0) {
 
       final long lockingSessionId = userRecord[0].getLong("user_softlock_sessionid");
-      this.setAppStatusCode(ReferenceData.RECORD_ALREADY_SOFTLOCKED);
+      this.setAppStatusCode(ReferenceData.STATUS_RECORD_ALREADY_SOFTLOCKED);
       this.setAppStatusString("User " + userId + " has already been locked by session " + lockingSessionId);
 
     } else {
+      // 'Lock' record 
       final long lockingSessionId = getUniqueId();
-      this.setAppStatusCode(ReferenceData.RECORD_HAS_BEEN_SOFTLOCKED);
+      this.setAppStatusCode(ReferenceData.STATUS_RECORD_HAS_BEEN_SOFTLOCKED);
+      
+      //Note how we pass the lock ID back...
       this.setAppStatusString("" + lockingSessionId);
       voltQueueSQL(upsertUserLock, getUniqueId(),  ReferenceData.LOCK_TIMEOUT_MS, currentTimestamp, userId);
     }
 
     voltQueueSQL(getUser, userId);
     voltQueueSQL(getAllTxn, userId);
+    voltQueueSQL(getUserUsage, userId);
 
     return voltExecuteSQL(true);
 
