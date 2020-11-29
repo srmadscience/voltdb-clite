@@ -69,12 +69,22 @@ create view allocated_credit as
 select sum(allocated_amount) allocated_amount 
 from user_usage_table;
 
-create view recent_activity as
+create view recent_activity_out as
 select TRUNCATE(MINUTE,txn_time) txn_time
        , sum(approved_amount) approved_amount
        , sum(spent_amount) spent_amount
        , count(*) how_many
 from user_recent_transactions
+where spent_amount > 0
+GROUP BY TRUNCATE(MINUTE,txn_time) ;
+
+create view recent_activity_in as
+select TRUNCATE(MINUTE,txn_time) txn_time
+       , sum(approved_amount) approved_amount
+       , sum(spent_amount) spent_amount
+       , count(*) how_many
+from user_recent_transactions
+where spent_amount <= 0
 GROUP BY TRUNCATE(MINUTE,txn_time) ;
 
 
@@ -112,14 +122,22 @@ CREATE PROCEDURE ShowCurrentAllocations__promBL AS
 BEGIN
 select 'user_count' statname,  'user_count' stathelp  ,how_many statvalue from cluster_users;
 select 'allocated_credit' statname,  'allocated_credit' stathelp  ,allocated_amount statvalue from allocated_credit;
-select 'recent_activity_approved' statname
-     , 'recent_activity_approved' stathelp  
+select 'recent_activity_out_approved' statname
+     , 'recent_activity_out_approved' stathelp  
      , approved_amount statvalue 
-from recent_activity where txn_time = truncate(minute, DATEADD(MINUTE, -1, NOW));
-select 'recent_activity_spent' statname
-     , 'recent_activity_spent' stathelp  
+from recent_activity_out where txn_time = truncate(minute, DATEADD(MINUTE, -1, NOW));
+select 'recent_activity_out_spent' statname
+     , 'recent_activity_out_spent' stathelp  
      , spent_amount statvalue 
-from recent_activity where txn_time = truncate(minute, DATEADD(MINUTE, -1, NOW));
+from recent_activity_out where txn_time = truncate(minute, DATEADD(MINUTE, -1, NOW));
+select 'recent_activity_in_approved' statname
+     , 'recent_activity_in_approved' stathelp  
+     , approved_amount statvalue 
+from recent_activity_in where txn_time = truncate(minute, DATEADD(MINUTE, -1, NOW));
+select 'recent_activity_in_spent' statname
+     , 'recent_activity_in_spent' stathelp  
+     , spent_amount statvalue 
+from recent_activity_in where txn_time = truncate(minute, DATEADD(MINUTE, -1, NOW));
 END;
 
 
