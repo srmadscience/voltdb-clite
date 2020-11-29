@@ -455,7 +455,9 @@ public abstract class BaseChargingDemo {
 		long elapsedTimeMs = System.currentTimeMillis() - startMsRun;
 		msg("Processed " + tranCount + " transactions in " + elapsedTimeMs + " milliseconds");
 
-		long tps = (tranCount / elapsedTimeMs) / 1000;
+		double tps = tranCount;
+		tps = tps / elapsedTimeMs;
+		tps = tps * 1000;
 
 		msg("TPS = " + tps);
 
@@ -463,7 +465,7 @@ public abstract class BaseChargingDemo {
 		msg("Report Usage calls = " + reportUsageCount);
 		msg("Skipped because transaction was in flight = " + inFlightCount);
 
-		return tps;
+		return (long) tps;
 	}
 
 	/**

@@ -78,7 +78,7 @@ select TRUNCATE(MINUTE,txn_time) txn_time
        , sum(spent_amount) spent_amount
        , count(*) how_many
 from user_recent_transactions
-where spent_amount > 0
+where spent_amount <= 0
 GROUP BY TRUNCATE(MINUTE,txn_time) ;
 
 create view recent_activity_in as
@@ -87,7 +87,7 @@ select TRUNCATE(MINUTE,txn_time) txn_time
        , sum(spent_amount) spent_amount
        , count(*) how_many
 from user_recent_transactions
-where spent_amount <= 0
+where spent_amount > 0
 GROUP BY TRUNCATE(MINUTE,txn_time) ;
 
 
