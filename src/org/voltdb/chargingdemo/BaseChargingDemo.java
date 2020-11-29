@@ -390,6 +390,7 @@ public abstract class BaseChargingDemo {
 		long inFlightCount = 0;
 		long addCreditCount = 0;
 		long reportUsageCount = 0;
+		long lastGlobalQueryMs = System.currentTimeMillis();
 
 		msg("starting...");
 
@@ -410,7 +411,6 @@ public abstract class BaseChargingDemo {
 
 			if (users[randomuser].isTxInFlight()) {
 				inFlightCount++;
-				tpThisMs--;
 			} else {
 
 				users[randomuser].startTran();
@@ -445,7 +445,15 @@ public abstract class BaseChargingDemo {
 			if (tranCount++ % 100000 == 0) {
 				msg("On transaction #" + tranCount);
 			}
-			;
+
+			// See if we need to do global queries...
+			if (lastGlobalQueryMs + (globalQueryFreqSeconds * 1000) < System.currentTimeMillis()) {
+				lastGlobalQueryMs = System.currentTimeMillis();
+
+				queryUserAndStats(mainClient, GENERIC_QUERY_USER_ID);
+
+			}
+
 		}
 
 		msg("finished adding transactions to queue");
