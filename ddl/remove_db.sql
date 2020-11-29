@@ -26,7 +26,9 @@ DROP view user_balance;
 
 DROP view allocated_credit;
 
-DROP view recent_activity;
+DROP view recent_activity_in;
+
+DROP view recent_activity_out;
 
 DROP view cluster_activity_by_users;
 

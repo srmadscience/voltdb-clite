@@ -24,7 +24,12 @@ create table user_usage_table
 ,allocated_amount bigint not null
 ,sessionid bigint  not null
 ,lastdate timestamp not null
-,primary key (userid, sessionid));
+,primary key (userid, sessionid))
+USING TTL 25 MINUTES ON COLUMN lastdate;
+
+CREATE INDEX ust_del_idx1 ON user_usage_table(lastdate);
+
+CREATE INDEX ust_del_idx2 ON user_usage_table(lastdate) WHERE NOT MIGRATING;
 
 PARTITION TABLE user_usage_table ON COLUMN userid;
 
