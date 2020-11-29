@@ -2,6 +2,8 @@
 
 file -inlinebatch END_OF_BATCH
 
+DROP procedure showTransactions IF EXISTS;
+
 DROP procedure FindByLoyaltyCard IF EXISTS;
 
 DROP PROCEDURE ShowCurrentAllocations__promBL IF EXISTS;
