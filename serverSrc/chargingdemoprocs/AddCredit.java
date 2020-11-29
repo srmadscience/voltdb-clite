@@ -86,7 +86,7 @@ public class AddCredit extends VoltProcedure {
 		} else {
 
 			// Report credit add...
-			this.setAppStatusCode(ReferenceData.CREDIT_ADDED);
+			this.setAppStatusCode(ReferenceData.STATUS_CREDIT_ADDED);
 			this.setAppStatusString(extraCredit + " added by Txn " + txnId);
 
 			// Insert a row into the stream for each user's financial events.

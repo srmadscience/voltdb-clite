@@ -52,7 +52,7 @@ public class AddCreditCallback implements ProcedureCallback {
 
 		if (arg0.getStatus() == ClientResponse.SUCCESS) {
 
-			if (arg0.getAppStatus() == ReferenceData.CREDIT_ADDED) {
+			if (arg0.getAppStatus() == ReferenceData.STATUS_CREDIT_ADDED) {
 
 				userTransactionState.endTran();
 
