@@ -1,14 +1,7 @@
 package org.voltdb.chargingdemo;
 
-import java.util.Arrays;
-
-import org.voltdb.client.ClientResponse;
-import org.voltdb.client.ProcedureCallback;
-
-import chargingdemoprocs.ReferenceData;
-
 /* This file is part of VoltDB.
- * Copyright (C) 2008-2019 VoltDB Inc.
+ * Copyright (C) 2008-2020 VoltDB Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -30,11 +23,16 @@ import chargingdemoprocs.ReferenceData;
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+import org.voltdb.client.ClientResponse;
+import org.voltdb.client.ProcedureCallback;
+
+import chargingdemoprocs.ReferenceData;
+
+
 /**
  * Class to keep track of how many transactions a given user has. It also keeps
  * track of whether a transaction is in progress and when it started.
- * 
- * @author drolfe
+ *
  *
  */
 public class UserKVState implements ProcedureCallback {
