@@ -38,7 +38,7 @@ public class ChargingDemoKVStore extends BaseChargingDemo {
 		msg("Parameters:" + Arrays.toString(args));
 
 		if (args.length != 7) {
-			msg("Usage: hostnames recordcount tpms durationseconds queryseconds jsonsize updateproportion");
+			msg("Usage: hostnames recordcount tpms durationseconds queryseconds jsonsize deltaProportion");
 			System.exit(1);
 		}
 
@@ -61,7 +61,7 @@ public class ChargingDemoKVStore extends BaseChargingDemo {
 		// How often we do global queries...
 		int jsonsize = Integer.parseInt(args[5]);
 		
-		int updateProportion = Integer.parseInt(args[6]);
+		int deltaProportion = Integer.parseInt(args[6]);
 
 	
 		try {
@@ -71,7 +71,7 @@ public class ChargingDemoKVStore extends BaseChargingDemo {
 
 			unlockAllRecords(mainClient);
 			runKVBenchmark(userCount, tpMs, durationSeconds, globalQueryFreqSeconds, jsonsize,
-					mainClient,updateProportion);
+					mainClient,deltaProportion);
 
 			msg("Closing connection...");
 			mainClient.close();

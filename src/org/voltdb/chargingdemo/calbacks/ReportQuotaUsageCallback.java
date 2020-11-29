@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.voltdb.VoltTable;
+import org.voltdb.chargingdemo.BaseChargingDemo;
 import org.voltdb.chargingdemo.UserTransactionState;
 import org.voltdb.client.ClientResponse;
 import org.voltdb.client.ProcedureCallback;
@@ -59,8 +60,8 @@ public class ReportQuotaUsageCallback implements ProcedureCallback {
 					|| arg0.getAppStatus() == ReferenceData.STATUS_NO_MONEY
 					|| arg0.getAppStatus() == ReferenceData.STATUS_OK) {
 
-				// Report latency for users whose id is divisible by 500000...
-				if (userTransactionState.id % 500000 == 0) {
+				// Report latency for user we are making a point of watching...
+				if (userTransactionState.id == BaseChargingDemo.GENERIC_QUERY_USER_ID) {
 					msg("ReportUsageCreditCallback user=" + userTransactionState.id + " transaction took "
 							+ (System.currentTimeMillis() - userTransactionState.txStartMs) + "ms");
 				}
