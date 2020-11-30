@@ -121,7 +121,7 @@ public class UserKVState implements ProcedureCallback {
 			byte statusByte = arg0.getAppStatus();
 
 			if (userState == STATUS_UNLOCKED) {
-
+				BaseChargingDemo.msg("UserKVState.clientCallback: got app status of " + arg0.getAppStatusString());
 			} else if (userState == STATUS_TRYING_TO_LOCK) {
 
 				if (statusByte == ReferenceData.STATUS_RECORD_HAS_BEEN_SOFTLOCKED
@@ -139,6 +139,8 @@ public class UserKVState implements ProcedureCallback {
 				userState = STATUS_UNLOCKED;
 			}
 
+		} else {
+			BaseChargingDemo.msg("UserKVState.clientCallback: got status of " + arg0.getStatusString());
 		}
 
 		txStartMs = 0;

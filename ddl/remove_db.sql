@@ -22,6 +22,8 @@ DROP PROCEDURE ReportQuotaUsage IF EXISTS;
    
 DROP PROCEDURE AddCredit IF EXISTS;  
 
+DROP view current_locks IF EXISTS; 
+
 DROP view user_balance IF EXISTS; 
 
 DROP view allocated_credit IF EXISTS;

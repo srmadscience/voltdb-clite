@@ -522,6 +522,9 @@ public abstract class BaseChargingDemo {
 		// How many transactions we've done...
 		int tranCount = 0;
 		int inFlightCount = 0;
+		int lockCount = 0;
+		int fullUpdate = 0;
+		int deltaUpdate = 0;
 
 		while (endtimeMs > System.currentTimeMillis()) {
 
@@ -550,15 +553,18 @@ public abstract class BaseChargingDemo {
 
 				userState[oursession].setStatus(UserKVState.STATUS_TRYING_TO_LOCK);
 				mainClient.callProcedure(userState[oursession], "GetAndLockUser", oursession);
+				lockCount++;
 
 			} else if (userState[oursession].getUserStatus() == UserKVState.STATUS_LOCKED) {
 
 				userState[oursession].setStatus(UserKVState.STATUS_UPDATING);
 
 				if (deltaProportion > r.nextInt(101)) {
+					deltaUpdate++;
 					mainClient.callProcedure(userState[oursession], "UpdateLockedUser", oursession,
 							userState[oursession].lockId, getNewLoyaltyCardNumber(r), ExtraUserData.NEW_LOYALTY_NUMBER);
 				} else {
+					fullUpdate++;
 					mainClient.callProcedure(userState[oursession], "UpdateLockedUser", oursession,
 							userState[oursession].lockId, getExtraUserDataAsJsonString(jsonsize, gson, r), null);
 				}
@@ -589,10 +595,9 @@ public abstract class BaseChargingDemo {
 		long transactionsPerMs = tranCount / (System.currentTimeMillis() - startMsRun);
 		msg("processed " + transactionsPerMs + " entries per ms while doing transactions...");
 		msg(inFlightCount + " events where a tx was in flight were observed");
-		msg("Waiting 10 seconds - if we are using XDCR we need to wait for remote transactions to reach us");
-		Thread.sleep(10000);
-
-		msg("Stats Histogram:");
+		msg(lockCount + " users locked");
+		msg(fullUpdate + " full updates");
+		msg(deltaUpdate + " delta updates");
 
 		return tranCount;
 	}

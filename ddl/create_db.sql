@@ -63,6 +63,11 @@ export to target user_financial_events
 ,user_txn_id varchar(128) not null
 ,message varchar(80) not null);
 
+create view current_locks as
+select count(*) how_many 
+from user_table 
+where user_softlock_expiry is not null;
+
 create view user_balance as
 select userid, sum(amount) balance
 from user_financial_events
@@ -74,7 +79,7 @@ from user_usage_table;
 
 create view recent_activity_out as
 select TRUNCATE(MINUTE,txn_time) txn_time
-       , sum(approved_amount) approved_amount
+       , sum(approved_amount * -1) approved_amount
        , sum(spent_amount) spent_amount
        , count(*) how_many
 from user_recent_transactions
@@ -123,6 +128,7 @@ create procedure FindByLoyaltyCard as select * from user_table where field(user_
 
 CREATE PROCEDURE ShowCurrentAllocations__promBL AS
 BEGIN
+select 'user_locks' statname,  'user_locks' stathelp  ,how_many statvalue from current_locks;
 select 'user_count' statname,  'user_count' stathelp  ,how_many statvalue from cluster_users;
 select 'allocated_credit' statname,  'allocated_credit' stathelp  ,allocated_amount statvalue from allocated_credit;
 select 'recent_activity_out_approved' statname
