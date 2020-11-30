@@ -137,10 +137,6 @@ select 'recent_activity_out_qty' statname
      , 'recent_activity_out_qty' stathelp  
      , how_many statvalue 
 from recent_activity_out where txn_time = truncate(minute, DATEADD(MINUTE, -1, NOW));
-select 'recent_activity_in_approved' statname
-     , 'recent_activity_in_approved' stathelp  
-     , approved_amount statvalue 
-from recent_activity_in where txn_time = truncate(minute, DATEADD(MINUTE, -1, NOW));
 select 'recent_activity_in_spent' statname
      , 'recent_activity_in_spent' stathelp  
      , spent_amount statvalue 
