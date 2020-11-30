@@ -25,7 +25,7 @@ create table user_usage_table
 ,sessionid bigint  not null
 ,lastdate timestamp not null
 ,primary key (userid, sessionid))
-USING TTL 25 MINUTES ON COLUMN lastdate;
+USING TTL 180 MINUTES ON COLUMN lastdate;
 
 CREATE INDEX ust_del_idx1 ON user_usage_table(lastdate);
 
