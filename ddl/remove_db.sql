@@ -2,7 +2,9 @@
 
 file -inlinebatch END_OF_BATCH
 
-DROP procedure showTransactions IF EXISTS;
+DROP PROCEDURE GetUsersWithMultipleSessions IF EXISTS;
+
+DROP PROCEDURE showTransactions IF EXISTS;
 
 DROP procedure FindByLoyaltyCard IF EXISTS;
 
@@ -39,6 +41,8 @@ DROP view cluster_activity IF EXISTS;
 DROP view last_cluster_activity IF EXISTS;
 
 DROP view cluster_users IF EXISTS;
+
+DROP view users_sessions IF EXISTS;
    
 DROP table user_table IF EXISTS;
 DROP table user_usage_table IF EXISTS;

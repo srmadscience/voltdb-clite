@@ -77,6 +77,14 @@ create view allocated_credit as
 select sum(allocated_amount) allocated_amount 
 from user_usage_table;
 
+create view users_sessions as 
+select userid,  sessionid, count(*) how_many 
+from user_usage_table
+group by  userid,  sessionid;
+
+create index uss_ix1 on users_sessions (how_many) WHERE how_many > 1;
+
+
 create view recent_activity_out as
 select TRUNCATE(MINUTE,txn_time) txn_time
        , sum(approved_amount * -1) approved_amount
@@ -114,7 +122,12 @@ create view cluster_users as
 select  count(*) how_many
 from user_table;
 
-
+create procedure GetUsersWithMultipleSessions
+AS 
+SELECT * FROM users_sessions 
+WHERE how_many > 1
+ORDER BY how_many, userid, sessionid
+LIMIT 50;
 
 create procedure showTransactions
 PARTITION ON TABLE user_table COLUMN userid
