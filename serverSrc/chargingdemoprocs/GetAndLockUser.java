@@ -53,7 +53,7 @@ public class GetAndLockUser extends VoltProcedure {
    * and an internally generated lock id that is used to do updates.
    * 
    * @param userId
-   * @return lockid (accessibe via ClientStatus.getAppStatusString())
+   * @return lockid (accessible via ClientStatus.getAppStatusString())
    * @throws VoltAbortException
    */
   public VoltTable[] run(long userId) throws VoltAbortException {
